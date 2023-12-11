@@ -268,9 +268,53 @@ public class LoopFinder
         {
             var point = item.Coordinates;
             var charToInsert = item.PipeChar;
-            //if (item.DistanceFromStart < 10)
-            //    charToInsert = item.DistanceFromStart.ToString()[0];
             newLines[point.Y] = newLines[point.Y].Remove(point.X, 1).Insert(point.X, charToInsert.ToString());
+        }
+        foreach (var line in newLines)
+        {
+            Console.WriteLine(line);
+        }
+        var inside = 0;
+        for(int y=0; y<newLines.Length; y++)
+        {
+            var isUpperOutside = true;
+            var isLowerOutside = true;
+            for (int x=0; x < newLines[y].Length; x++)
+            {
+                if(y==9 & x>50)
+                {
+                    ;
+                }
+                if (newLines[y][x] == '│')
+                {
+                    isLowerOutside = !isLowerOutside;
+                    isUpperOutside = !isUpperOutside;
+                }
+                else if (newLines[y][x] == '┌' || newLines[y][x] == '┐' || newLines[y][x]== 'S')
+                {
+                    isLowerOutside = !isLowerOutside;
+                }
+                else if(newLines[y][x] == '┘' || newLines[y][x] == '└')
+                {
+                    isUpperOutside= !isUpperOutside;
+                }
+                if (!pipeItems.Any(pi => pi.Coordinates.X == x && pi.Coordinates.Y == y))
+                {
+                    if (isUpperOutside && isLowerOutside)
+                    {
+                        newLines[y] = newLines[y].Remove(x, 1).Insert(x, "O");
+                    }
+                    else if(!isUpperOutside && !isLowerOutside)
+                    {
+                        inside++;
+                        newLines[y] = newLines[y].Remove(x, 1).Insert(x, "I");
+                    }
+                    else
+                    {
+                        Console.WriteLine("This situation shouldn't happend");
+                    }
+                }
+            }
         }
         foreach (var line in newLines)
         {
@@ -279,6 +323,7 @@ public class LoopFinder
 
         var max = pipeItems.Max(x => x.DistanceFromStart);
         Console.WriteLine($"Maximum distance={max}");
+        Console.WriteLine($"Amount of fields inside={inside}");
     }
 
     public List<Point> GetPointsToCheck(Point currentPoint, char currentChar)
